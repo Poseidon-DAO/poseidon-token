@@ -32,7 +32,7 @@ The smart contract will consider only the effective amount of token that can be 
 
 being:
 
-## $1<q<n_t-1$
+## $1 \leq q \leq n_t-1$
 
 In other words the $q$ amount will not be taken on the burning system.
 
