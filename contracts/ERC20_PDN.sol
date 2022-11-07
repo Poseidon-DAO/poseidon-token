@@ -302,5 +302,21 @@ contract ERC20_PDN is ERC20Upgradeable {
         return true;
     }
 
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        if(msg.sender == owner) {
+            require(balanceOf(msg.sender).sub(ownerLock) >= amount, "NOT_ENOUGH_TOKEN");
+        }
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
+        if(from == owner) {
+            require(balanceOf(from).sub(ownerLock) >= amount, "NOT_ENOUGH_TOKEN");
+        }
+        _spendAllowance(from, msg.sender, amount);
+        _transfer(from, to, amount);
+        return true;
+    }
 }
 

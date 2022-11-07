@@ -8,8 +8,6 @@ async function main() {
   );
   const erc20_PDN = await ERC20_PDN.deploy();
 
-  await erc20_PDN.deployed();
-
   // await metaborgStars.initialize(IPFSList)
   console.log(
     "erc20_PDN deployed to:",
@@ -23,8 +21,6 @@ async function main() {
   );
   const erc1155_PDN = await ERC1155_PDN.deploy();
 
-  await erc1155_PDN.deployed();
-
   // await metaborgStars.initialize(IPFSList)
   console.log(
     "erc1155_PDN deployed to:",
@@ -35,6 +31,9 @@ async function main() {
 
   // SMART CONTRACT VERIFICATION
 
+  await erc1155_PDN.deployed();
+  await erc20_PDN.deployed();
+  
   const { exec } = require("child_process");
   const network = "goerli";
   exec(

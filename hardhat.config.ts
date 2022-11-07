@@ -5,6 +5,7 @@ import { HardhatUserConfig } from "hardhat/types";
 
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "hardhat-abi-exporter";
 import "@nomiclabs/hardhat-web3";
@@ -14,20 +15,14 @@ import "@nomicfoundation/hardhat-toolbox";
 // import "solidity-coverage";
 // const mocha = require("./mocha-config");
 
-const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
+const API_URL = process.env.API_URL || "";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 const MNEMONIC = process.env.MNEMONIC || ""; 
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
-  mocha: {
-    timeout: 100000000000
-  },
   solidity: {
-    // compilers: [{ version: "0.4.18", settings: {} }],
-    // compilers: [{ version: "0.5.0", settings: {} }],
-    // compilers: [{ version: "0.7.6", settings: {} }],
     compilers: [{ version: "0.8.0"}, {version: "0.8.1"}, {version: "0.8.3", settings: {} }],
   },
   abiExporter: {
@@ -47,12 +42,14 @@ const config: HardhatUserConfig = {
       }
     },
     goerli: {
-      url: `${process.env.API_URL}`,
-      accounts: [`${process.env.PRIVATE_KEY}`]
+      url: API_URL,
+      accounts: [PRIVATE_KEY],
+      gasPrice: 50000000000
     },
     mainnet: {
-      url: `${process.env.API_URL}`,
-      accounts: [`${process.env.PRIVATE_KEY}`]
+      url: API_URL,
+      accounts: [PRIVATE_KEY],
+      gasPrice: 50000000000
     },
     localhost: {
       accounts: {
