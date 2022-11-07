@@ -109,7 +109,7 @@ The use case follow this table:
 
 | Owner Token Balance | Owner Lock Amount | Current Block | Vest Amount | Vest User Address | Vest Expiration Block | Withdraw |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|1000000|0|100|-|-|-|-|
+|100000|0|100|-|-|-|-|
 |100000|5000|150|5000|A|500|-|
 |100000|12000|200|7000|B|1000|-|
 |100000|20000|400|8000|C|1200|-|
