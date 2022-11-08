@@ -60,7 +60,7 @@ To access to this burning system we have to run the
 The *_amount* doesn't consider the decimals (equals to 18), so whenever we burn tokens, we are burning an amount multiply for $10^{18}$.
 Same for the ratio, we are considering only integer part of the token itself, so, whenever we are talking about a ratio, effectively we multiply the amount for $10^{18}$.
 
-In the other smart contract, instead, we define the ERC20 address the initialization. In this way they are able to comunicate in a exclusive way cause the actor that is allowed to mint is only the ERC20 address previously declared.
+In the other smart contract, instead, we define the ERC20 address in the initialization. In this way they are able to comunicate in a exclusive way cause the actor that is allowed to mint is only the ERC20 address previously declared.
 
 ```
  # ERC1155_PDN.sol
@@ -105,7 +105,7 @@ Temporary the vest amount will be locked on the owner balance and only when the 
 
 All ERC20 transfer actions for the owner will consider the lock amount due to the vesting system, in other words, owner can't transfer (with or without allowance) or can't create new vests if his balance is not greater than 0.
 
-The use case follow this table:
+The use case follows this table:
 
 | Owner Token Balance | Owner Lock Amount | Current Block | Vest Amount | Vest User Address | Vest Expiration Block | Withdraw |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -128,4 +128,4 @@ $owner_{balance}-owner_{lock}\geq Transfer_{op}$
 
 otherwise the function will be reverted.
 
-Also transfer functionalities are overriden to avoid over spending from the owner.
+Also transfer functionalities are overrode to avoid over spending from the owner.
