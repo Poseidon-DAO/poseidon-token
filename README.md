@@ -1,12 +1,12 @@
 # Poseidon DAO Token ERC20-ERC1155
 
-This project is part of the whole Poseidon DAO focused on thr hybrid token management system between the standard token ERC20 and ERC1155.
+This project is part of the whole Poseidon DAO focused on the hybrid token management system between the standard token ERC20 and ERC1155.
 
 ##  Hybrid Burning System
 
-Poseidon Token is a standard ERC20 Token connected to an ERC1155 Token thanks to an **hybrid burning system** where we can burn an amount of token to receive a specific amount of NFT.
+Poseidon Token is a standard ERC20 Token connected to an ERC1155 Token thanks to a **hybrid burning system** where we can burn an amount of token to receive a specific amount of NFT.
 
-There is a ratio between both that specify the amount of ERC20 Token we need to be able to reach one single NFT and it can be set running the function:
+There is a ratio between both that specifies the amount of ERC20 Token we need to be able to reach one single NFT and it can be set running the function:
 ```
  # ERC20_PDN.sol
 
@@ -16,13 +16,13 @@ There is a ratio between both that specify the amount of ERC20 Token we need to 
 
  ...
 ```
-This function, runnable only from admin, set:
+This function, runnable only from admin, sets:
 
 1. The ERC1155 Address linked to the ERC20 Address
 2. The ID of the ERC1155
 3. The ratio
 
-Last parameter is defined as follow:
+Last parameter is defined as follows:
 
 ## $R=ratio=n_{token}/n_{nft}=n_t/n_f=costant$
 
@@ -60,7 +60,7 @@ To access to this burning system we have to run the
 The *_amount* doesn't consider the decimals (equals to 18), so whenever we burn tokens, we are burning an amount multiply for $10^{18}$.
 Same for the ratio, we are considering only integer part of the token itself, so, whenever we are talking about a ratio, effectively we multiply the amount for $10^{18}$.
 
-In the other smart contract, instead, we define in the initialization, the ERC20 address. In this way they are able to comunicate in a esclusive way cause the actor that is allowed to mint is only the ERC20 address previously declared.
+In the other smart contract, instead, we define the ERC20 address the initialization. In this way they are able to comunicate in a exclusive way cause the actor that is allowed to mint is only the ERC20 address previously declared.
 
 ```
  # ERC1155_PDN.sol
