@@ -250,14 +250,13 @@ contract ERC20_PDN is ERC20Upgradeable {
     }
 
     /*
-    * @dev: This function allows to create an airdrop of vests based on a list of { addresses }, { amounts } and { duration }
+    * @dev: This function allows to create an airdrop of vests based on a list of { addresses }, { amounts } and { durations }
     *
     * Requirements:
     *       - Arrays have to have the same length
     *
     * Events:
-    *       - WithdrawVestEvent
-    *       - ERC20 transfer event
+    *       - AddVestEvent for each address
     */
 
     function airdropVest(address[] memory _addresses, uint[] memory _amounts, uint[] memory _durations) public onlyOwner returns(bool){
