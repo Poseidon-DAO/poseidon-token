@@ -196,31 +196,17 @@ contract ERC20_PDN is ERC20Upgradeable {
     */
 
     function withdrawVest(uint _index) public returns(bool){
-        require(vestList[msg.sender].length > _index, "VEST_INDEX_DISMATH");
+        uint length = vestList[msg.sender].length;
+        require(length > _index, "VEST_INDEX_DISMATCH");
         uint vestAmount = vestList[msg.sender][_index].amount;
         vestList[msg.sender][_index].amount = uint(0);
         require(vestAmount > uint(0), "VEST_ALREADY_WITHDREW");
         require(vestList[msg.sender][_index].expirationDate < block.number, "VEST_NOT_EXPIRED");
-        deleteEmptyArrayField(msg.sender);
         ownerLock = ownerLock.sub(vestAmount);
+        if(length > 1) vestList[msg.sender][_index] = vestList[msg.sender][length.sub(1)];
+        vestList[msg.sender].pop();
         _transfer(owner, msg.sender, vestAmount);
         emit WithdrawVestEvent(_index, msg.sender, vestAmount);
-        return true;
-    }
-
-    /*
-    * @dev: This private function allow to delete recursively last withdrew vest
-    */
-
-    function deleteEmptyArrayField(address _address) private returns(bool){
-        uint length = vestList[_address].length;
-        for(uint index = uint(0); index < length; index++){
-            if(vestList[_address][length.sub(index).sub(1)].amount == uint(0)){
-                vestList[_address].pop();
-            } else {
-                break;
-            }
-        }
         return true;
     }
 
@@ -228,25 +214,8 @@ contract ERC20_PDN is ERC20Upgradeable {
     * @dev: This function allows to get the list of available vestIndex
     */
 
-    function getListOfVest(address _address) public view returns(uint[] memory){
-        uint length = vestList[_address].length;
-        // Count number of elements that respect the condition
-        uint count = uint(0);
-        for(uint index = uint(0); index < length; index++){
-            if(vestList[_address][index].amount != uint(0)){
-                count++;
-            } 
-        }
-        // Fill the result array with the indexes
-        uint[] memory result = new uint[](count);
-        uint resultIndex = uint(0);
-        for(uint index = uint(0); index < length; index++){
-            if(vestList[_address][index].amount != uint(0)){
-                result[resultIndex] = index;
-                resultIndex++;
-            } 
-        }
-        return result;
+    function getVestLength(address _address) public view returns(uint){
+        return vestList[_address].length;
     }
 
     /*
