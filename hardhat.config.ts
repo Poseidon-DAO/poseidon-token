@@ -23,10 +23,10 @@ const MNEMONIC = process.env.MNEMONIC || "";
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   solidity: {
-    compilers: [{ version: "0.8.0"}, {version: "0.8.1"}, {version: "0.8.3", settings: {
+    compilers: [{ version: "0.8.0"}, {version: "0.8.1"}, {version: "0.8.13", settings: {
       optimizer: {
         enabled: true,
-        runs: 1,
+        runs: 10,
       },
     }, }],
   },
