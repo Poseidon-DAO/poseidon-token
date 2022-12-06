@@ -39,14 +39,6 @@ contract ERC20_PDN is ERC20Upgradeable {
     event WithdrawVestEvent(uint vestIndex, address receiver, uint amount);
     event securityDelayInBlocksEvent(address owner, uint securityDelayInBlocks);
 
-    /*
-    * @dev: This modifier allows function to be run only from the owner of the smart contract itself.
-    *       The owner can be changed thanks to 'changeOwner' event and after 1 week with 'confirmChangeOwner'
-    *
-    * Requirements:
-    *       - The owner has to be the address that make the signature of the transaction itself
-    */
-
     modifier onlyOwner {
         require(owner == msg.sender, "ONLY_ADMIN_CAN_RUN_THIS_FUNCTION");
         _;
@@ -58,6 +50,7 @@ contract ERC20_PDN is ERC20Upgradeable {
         }
         _;
     }
+    
     /*
     * @dev: We initialize the upgradeable smart contract with all ERC20 metadata: { name }, { symbol },
     *       { totalSupply }, { decimals }. Automatically who initialize the smart contract is the owner
