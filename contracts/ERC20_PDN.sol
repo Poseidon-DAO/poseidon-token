@@ -103,7 +103,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     * @dev: Standard ERC20 burn function
     *
     * Events:
-    *       - Standard ERC20 burn event
+    *       - Standard ERC20 burn event     
     */
 
     function burn(uint _amount) public ownerCheckBalance(msg.sender, _amount) returns(bool){
