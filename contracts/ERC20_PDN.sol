@@ -42,16 +42,15 @@ contract ERC20_PDN is ERC20Upgradeable {
     event DeleteVestEvent(address owner, address to);
     event WithdrawVestEvent(uint vestIndex, address receiver, uint amount);
 
-    /*
-    * @dev: This modifier allows function to be run only from the owner of the smart contract itself.
-    *       The owner can be changed thanks to 'changeOwner' event and after 1 week with 'confirmChangeOwner'
-    *
-    * Requirements:
-    *       - The owner has to be the address that make the signature of the transaction itself
-    */
-
     modifier onlyOwner {
         require(owner == msg.sender, "ONLY_ADMIN_CAN_RUN_THIS_FUNCTION");
+        _;
+    }
+
+    modifier ownerCheckBalance(address _sender, uint _amount){
+        if(_sender == owner) {
+            require(balanceOf(msg.sender) >= _amount + ownerLock, "NOT_ENOUGH_TOKEN");
+        }
         _;
     }
 
@@ -104,10 +103,10 @@ contract ERC20_PDN is ERC20Upgradeable {
     * @dev: Standard ERC20 burn function
     *
     * Events:
-    *       - OwnerChangeEvent: Standard ERC20 burn event
+    *       - Standard ERC20 burn event
     */
 
-    function burn(uint _amount) public returns(bool){
+    function burn(uint _amount) public ownerCheckBalance(msg.sender, _amount) returns(bool){
         _burn(msg.sender, _amount);
         return true;
     }
@@ -129,9 +128,12 @@ contract ERC20_PDN is ERC20Upgradeable {
         address tmpERC1155Address = ERC1155Address;
         require(tmpERC1155Address != address(0), "ERC1155_ADDRESS_NOT_SET");
         uint tmpRatio = ratio;
-        uint NFTAmount = _amount.div(tmpRatio);
-        require(balanceOf(msg.sender).div(tmpRatio) >= NFTAmount && NFTAmount > uint(0), "NOT_ENOUGH_TOKEN_TO_RECEIVE_NFT");
-        _burn(msg.sender, NFTAmount.mul(ratio).mul(uint(10) ** decimals()));
+        uint NFTAmount;
+        uint netBalance = (msg.sender == owner ? balanceOf(msg.sender) - ownerLock : (balanceOf(msg.sender)));
+        require(netBalance >= _amount, "NOT_ENOUGH_TOKEN");
+        NFTAmount = _amount / tmpRatio;
+        require(NFTAmount > uint(0), "NOT_ENOUGH_TOKEN_TO_RECEIVE_NFT");
+        _burn(msg.sender, NFTAmount * ratio);
         IERC1155_PDN IERC1155_PDN_Interface = IERC1155_PDN(ERC1155Address);
         IERC1155_PDN_Interface.mint(msg.sender, ID_ERC1155, NFTAmount, bytes("0"));
         return true;
@@ -283,18 +285,12 @@ contract ERC20_PDN is ERC20Upgradeable {
         return true;
     }
 
-    function transfer(address to, uint256 amount) public virtual override returns (bool) {
-        if(msg.sender == owner) {
-            require(balanceOf(msg.sender).sub(ownerLock) >= amount, "NOT_ENOUGH_TOKEN");
-        }
+    function transfer(address to, uint256 amount) public ownerCheckBalance(msg.sender, amount) virtual override returns (bool) {
         _transfer(msg.sender, to, amount);
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
-        if(from == owner) {
-            require(balanceOf(from).sub(ownerLock) >= amount, "NOT_ENOUGH_TOKEN");
-        }
+    function transferFrom(address from, address to, uint256 amount) public ownerCheckBalance(from, amount) virtual override returns (bool) {
         _spendAllowance(from, msg.sender, amount);
         _transfer(from, to, amount);
         return true;
