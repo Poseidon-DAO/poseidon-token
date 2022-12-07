@@ -23,20 +23,21 @@ contract ERC20_PDN is ERC20Upgradeable {
     uint public ID_ERC1155;
     uint public ratio;
     uint public ownerLock;
-    uint public constant SECURITY_DELAY = uint(5760);
+    uint public securityDelayInBlocks;
 
     struct vest {
         uint amount;
-        uint expirationDate;
+        uint expirationBlockHeight;
     }
 
     mapping(address => vest[]) vestList;
 
     event ERC1155SetEvent(address indexed owner, address ERC1155address, uint ERC1155ID, uint ratio);
     event OwnerChangeEvent(address indexed oldOwner, address indexed newOwner);
-    event AddVestEvent(address to, uint amount, uint duration);
-    event DeleteVestEvent(address owner, address to);
+    event AddVestEvent(address to, uint amount, uint durationInBlocks);
+    event DeleteVestEvent(address owner, address to, uint amount);
     event WithdrawVestEvent(uint vestIndex, address receiver, uint amount);
+    event securityDelayInBlocksEvent(address owner, uint securityDelayInBlocks);
 
     modifier onlyOwner {
         require(owner == msg.sender, "ONLY_ADMIN_CAN_RUN_THIS_FUNCTION");
@@ -53,7 +54,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     /*
     * @dev: We initialize the upgradeable smart contract with all ERC20 metadata: { name }, { symbol },
     *       { totalSupply } in wei. Automatically who initialize the smart contract is the owner
-    *       of the smartcontract itself. securityDelayInBlocks default value is 5760 blocks.
+    *       of the smartcontract itself.
     *
     * Requirements:
     *       - No requirements needed
@@ -214,10 +215,9 @@ contract ERC20_PDN is ERC20Upgradeable {
         require(length > _index, "VEST_INDEX_DISMATCH");
         uint vestAmount = vestList[msg.sender][_index].amount;
         vestList[msg.sender][_index].amount = uint(0);
-        require(vestAmount > uint(0), "VEST_ALREADY_WITHDREW");
-        require(vestList[msg.sender][_index].expirationDate < block.number, "VEST_NOT_EXPIRED");
-        ownerLock = ownerLock.sub(vestAmount);
-        if(length > 1) vestList[msg.sender][_index] = vestList[msg.sender][length.sub(1)];
+        require(vestList[msg.sender][_index].expirationBlockHeight < block.number, "VEST_NOT_EXPIRED");
+        ownerLock = ownerLock - vestAmount;
+        if(length > 1) vestList[msg.sender][_index] = vestList[msg.sender][length - 1];
         vestList[msg.sender].pop();
         _transfer(owner, msg.sender, vestAmount);
         emit WithdrawVestEvent(_index, msg.sender, vestAmount);
@@ -265,11 +265,11 @@ contract ERC20_PDN is ERC20Upgradeable {
     */
 
     function getVestMetaData(uint _index, address _address) public view returns(uint, uint){
-        return (vestList[_address][_index].amount, vestList[_address][_index].expirationDate);
+        return (vestList[_address][_index].amount, vestList[_address][_index].expirationBlockHeight);
     }
 
     /*
-    * @dev: This function delete all not expired vests from a spacific { address }
+    * @dev: This function delete a vest
     *
     * Requirements:
     *       - Only the owner can run this function
@@ -284,7 +284,7 @@ contract ERC20_PDN is ERC20Upgradeable {
         uint amount;
         uint length = vestList[_address].length;
         for(uint index = uint(0); index < vestList[_address].length; index++){
-            if(vestList[_address][index].expirationBlockHeight > block.number) { 
+            if(vestList[_address][index].expirationBlockHeight > block.number) {
                 amount = vestList[_address][index].amount;
                 tmpOwnerLock = tmpOwnerLock - amount;
                 vestList[_address][index] = vestList[_address][length - 1];
