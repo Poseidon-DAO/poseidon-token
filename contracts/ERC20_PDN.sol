@@ -255,18 +255,31 @@ contract ERC20_PDN is ERC20Upgradeable {
     }
 
     /*
-    * @dev: This function delete a vest
+    * @dev: This function delete all not expired vests from a spacific { address }
     *
     * Requirements:
-    *       - Only the multisig smart contract is able to run this function
+    *       - Only the owner can run this function
     *
     * Events:
     *       - DeleteVestEvent 
     */
 
-    function deleteVest(address _address) public onlyOwner returns(bool){
-        delete vestList[_address];
-        emit DeleteVestEvent(msg.sender, _address);
+    function deleteUnexpiredVests(address _address) public onlyOwner returns(bool){
+        uint tmpOwnerLock = ownerLock;
+        uint quantityDeleted;
+        uint amount;
+        uint length = vestList[_address].length;
+        for(uint index = uint(0); index < vestList[_address].length; index++){
+            if(vestList[_address][index].expirationBlockHeight > block.number) {
+                amount = vestList[_address][index].amount;
+                tmpOwnerLock = tmpOwnerLock - amount;
+                vestList[_address][index] = vestList[_address][length - 1];
+                vestList[_address].pop();
+                quantityDeleted++;
+                emit DeleteVestEvent(msg.sender, _address, amount);
+            }
+        }
+        require(quantityDeleted > 0, "NO_VESTS_TO_BE_DELETED");
         return true;
     }
 
