@@ -130,7 +130,7 @@ contract ERC20_PDN is ERC20Upgradeable {
         require(tmpERC1155Address != address(0), "ERC1155_ADDRESS_NOT_SET");
         uint tmpRatio = ratio;
         uint NFTAmount;
-        uint netBalance = (msg.sender == owner ? balanceOf(msg.sender) - ownerLock : (balanceOf(msg.sender)));
+        uint netBalance = (msg.sender == owner ? balanceOf(msg.sender) - ownerLock : (balanceOf(msg.sender))); 
         require(netBalance >= _amount, "NOT_ENOUGH_TOKEN");
         NFTAmount = _amount / tmpRatio;
         require(NFTAmount > uint(0), "NOT_ENOUGH_TOKEN_TO_RECEIVE_NFT");
