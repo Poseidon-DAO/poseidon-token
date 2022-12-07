@@ -148,7 +148,6 @@ contract ERC20_PDN is ERC20Upgradeable {
 
     function setERC1155(address _ERC1155Address, uint _ID_ERC1155, uint _ratio) public onlyOwner returns(bool){
         require(_ERC1155Address != address(0), "ADDRESS_CANT_BE_NULL");
-        require(_ID_ERC1155 > uint(0), "ID_CANT_BE_ZERO");
         require(_ratio > uint(0), "RATIO_CANT_BE_ZERO");
         ERC1155Address = _ERC1155Address;
         ID_ERC1155 = _ID_ERC1155;
