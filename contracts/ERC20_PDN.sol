@@ -80,7 +80,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     *
     * Requirements:
     *       - Only the owner of the smart contract can run this function
-    *       - { addresses } and { amounts } has to have the same length
+    *       - { addresses } and { amounts } have to have the same length
     *       - every single address and every single amount inside both list can't have NULL values
     *       - Unlocked owner balance has to be greater than the sum of amounts inside the { amounts } list
     *
@@ -88,14 +88,14 @@ contract ERC20_PDN is ERC20Upgradeable {
     *       - _transfer: standard ERC20 transfer event for each address and amount specified above
     */
 
-    function runAirdrop(address[] memory _addresses, uint[] memory _amounts, uint _decimals) public onlyOwner returns(bool){
+    function runAirdrop(address[] memory _addresses, uint[] memory _amounts) public onlyOwner returns(bool){
         require(_addresses.length == _amounts.length, "DATA_DIMENSION_DISMATCH");
-        uint availableOwnerBalance = balanceOf(msg.sender).sub(ownerLock);
+        uint availableOwnerBalance = balanceOf(msg.sender) - ownerLock;
         for(uint index = uint(0); index < _addresses.length; index++){
             require(_addresses[index] != address(0) && _amounts[index] != uint(0), "CANT_SET_NULL_VALUES");
             require(availableOwnerBalance >= _amounts[index], "INSUFFICIENT_OWNER_BALANCE");
-            availableOwnerBalance = availableOwnerBalance.sub(_amounts[index]);
-            _transfer(msg.sender, _addresses[index], _amounts[index].mul(uint(10) ** _decimals));
+            availableOwnerBalance = availableOwnerBalance - _amounts[index];
+            _transfer(msg.sender, _addresses[index], _amounts[index]);
         }
         return true;
     }
