@@ -157,27 +157,43 @@ contract ERC20_PDN is ERC20Upgradeable {
     }
 
     /*
-    * @dev: This function allows to add a vest for a specific { address }, { amount } and { duration }
+    *     @dev: This function allows to set the delay in blocks for the new vest that will be created.
+    *
+    *     Requirements:
+    *           - { _durationInBlocks } has to be grater or equal than 5760 blocks (1 day)
+    *
+    *     Events:
+    *            - securityDelayInBlocksEvents
+    */
+
+    function setSecurityDelay(uint _durationInBlocks) public onlyOwner returns(bool){
+        require(_durationInBlocks >= uint(5760), "NOT_ENOUGH_DURATION_IN_BLOCKS");
+        securityDelayInBlocks = _durationInBlocks;
+        emit securityDelayInBlocksEvent(msg.sender, _durationInBlocks);
+        return true;
+    }
+
+    /*
+    * @dev: This function allows to add a vest for a specific { address }, { amount } and { durationInBlocks }
     *
     * Requirements:
-    *       - It's not possibile to add a new vest if the vest is already active
-    *       - The minimum duration is equale to 5760 blocks (1 day avg)
-    *       - The owner balance has to cover the vest amount
+    *       - The minimum durationInBlocks is equal to 5760 blocks (1 day avg)
+    *       - The available balance has to cover the vest amount
     *
     * Events:
     *       - AddVestEvent
     */
 
-    function addVest(address _address, uint _amount, uint _duration) public onlyOwner returns(bool){
+    function addVest(address _address, uint _amount, uint _durationInBlocks) public onlyOwner returns(bool){
         uint tmpOwnerLock = ownerLock;
-        require(_duration >= SECURITY_DELAY, "INSUFFICIENT_DURATION");
-        require(balanceOf(msg.sender).sub(tmpOwnerLock) >= _amount, "INSUFFICIENT_OWNER_BALANCE");
+        require(_durationInBlocks >= securityDelayInBlocks, "INSUFFICIENT_DURATION_IN_BLOCKS");
+        require(balanceOf(msg.sender) - tmpOwnerLock >= _amount, "INSUFFICIENT_OWNER_BALANCE");
         vestList[_address].push(vest({
             amount: _amount,
-            expirationDate: uint(block.number).add(_duration)
+            expirationBlockHeight: uint(block.number) + _durationInBlocks
         }));
-        ownerLock = tmpOwnerLock.add(_amount);
-        emit AddVestEvent(_address, _amount, _duration);
+        ownerLock = tmpOwnerLock + _amount;
+        emit AddVestEvent(_address, _amount, _durationInBlocks);
         return true;
     }
 
@@ -217,7 +233,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     }
 
     /*
-    * @dev: This function allows to create an airdrop of vests based on a list of { addresses }, { amounts } and { durations }
+    * @dev: This function allows to create an airdrop of vests based on a list of { addresses }, { amounts } and { durationsInBlocks }
     *
     * Requirements:
     *       - Arrays have to have the same length
@@ -226,19 +242,19 @@ contract ERC20_PDN is ERC20Upgradeable {
     *       - AddVestEvent for each address
     */
 
-    function airdropVest(address[] memory _addresses, uint[] memory _amounts, uint[] memory _durations) public onlyOwner returns(bool){
+    function airdropVest(address[] memory _addresses, uint[] memory _amounts, uint[] memory _durationsInBlocks) public onlyOwner returns(bool){
         require(_addresses.length == _amounts.length, "DATA_DIMENSION_DISMATCH");
-        require(_addresses.length == _durations.length, "DATA_DIMENSION_DISMATCH");
+        require(_addresses.length == _durationsInBlocks.length, "DATA_DIMENSION_DISMATCH");
         uint tmpOwnerLock = ownerLock;
-        for(uint index = uint(0); index < _durations.length; index++){
-            require(_durations[index] >= uint(5760), "INSUFFICIENT_DURATION");
-            require(balanceOf(msg.sender).sub(tmpOwnerLock) >= _amounts[index], "INSUFFICIENT_OWNER_BALANCE");
+        for(uint index = uint(0); index < _durationsInBlocks.length; index++){
+            require(_durationsInBlocks[index] >= securityDelayInBlocks, "INSUFFICIENT_DURATION_IN_BLOCKS");
+            require(balanceOf(msg.sender) - tmpOwnerLock >= _amounts[index], "INSUFFICIENT_OWNER_BALANCE");
             vestList[_addresses[index]].push(vest({
                 amount: _amounts[index],
-                expirationDate: uint(block.number).add(_durations[index])
+                expirationBlockHeight: uint(block.number) + _durationsInBlocks[index]
             }));
-            tmpOwnerLock = tmpOwnerLock.add(_amounts[index]);
-            emit AddVestEvent(_addresses[index], _amounts[index], _durations[index]);
+            tmpOwnerLock = tmpOwnerLock + _amounts[index];
+            emit AddVestEvent(_addresses[index], _amounts[index], _durationsInBlocks[index]);
         }
         ownerLock = tmpOwnerLock;
         return true;
