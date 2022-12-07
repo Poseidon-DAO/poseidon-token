@@ -42,16 +42,15 @@ contract ERC20_PDN is ERC20Upgradeable {
     event DeleteVestEvent(address owner, address to);
     event WithdrawVestEvent(uint vestIndex, address receiver, uint amount);
 
-    /*
-    * @dev: This modifier allows function to be run only from the owner of the smart contract itself.
-    *       The owner can be changed thanks to 'changeOwner' event and after 1 week with 'confirmChangeOwner'
-    *
-    * Requirements:
-    *       - The owner has to be the address that make the signature of the transaction itself
-    */
-
     modifier onlyOwner {
         require(owner == msg.sender, "ONLY_ADMIN_CAN_RUN_THIS_FUNCTION");
+        _;
+    }
+
+    modifier ownerCheckBalance(address _sender, uint _amount){
+        if(_sender == owner) {
+            require(balanceOf(msg.sender) >= _amount + ownerLock, "NOT_ENOUGH_TOKEN");
+        }
         _;
     }
 
@@ -80,7 +79,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     *
     * Requirements:
     *       - Only the owner of the smart contract can run this function
-    *       - { addresses } and { amounts } has to have the same length
+    *       - { addresses } and { amounts } have to have the same length
     *       - every single address and every single amount inside both list can't have NULL values
     *       - Unlocked owner balance has to be greater than the sum of amounts inside the { amounts } list
     *
@@ -88,14 +87,14 @@ contract ERC20_PDN is ERC20Upgradeable {
     *       - _transfer: standard ERC20 transfer event for each address and amount specified above
     */
 
-    function runAirdrop(address[] memory _addresses, uint[] memory _amounts, uint _decimals) public onlyOwner returns(bool){
+    function runAirdrop(address[] memory _addresses, uint[] memory _amounts) public onlyOwner returns(bool){
         require(_addresses.length == _amounts.length, "DATA_DIMENSION_DISMATCH");
-        uint availableOwnerBalance = balanceOf(msg.sender).sub(ownerLock);
+        uint availableOwnerBalance = balanceOf(msg.sender) - ownerLock;
         for(uint index = uint(0); index < _addresses.length; index++){
             require(_addresses[index] != address(0) && _amounts[index] != uint(0), "CANT_SET_NULL_VALUES");
             require(availableOwnerBalance >= _amounts[index], "INSUFFICIENT_OWNER_BALANCE");
-            availableOwnerBalance = availableOwnerBalance.sub(_amounts[index]);
-            _transfer(msg.sender, _addresses[index], _amounts[index].mul(uint(10) ** _decimals));
+            availableOwnerBalance = availableOwnerBalance - _amounts[index];
+            _transfer(msg.sender, _addresses[index], _amounts[index]);
         }
         return true;
     }
@@ -104,10 +103,10 @@ contract ERC20_PDN is ERC20Upgradeable {
     * @dev: Standard ERC20 burn function
     *
     * Events:
-    *       - OwnerChangeEvent: Standard ERC20 burn event
+    *       - Standard ERC20 burn event
     */
 
-    function burn(uint _amount) public returns(bool){
+    function burn(uint _amount) public ownerCheckBalance(msg.sender, _amount) returns(bool){
         _burn(msg.sender, _amount);
         return true;
     }
