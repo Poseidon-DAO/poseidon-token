@@ -56,8 +56,8 @@ contract ERC20_PDN is ERC20Upgradeable {
 
     /*
     * @dev: We initialize the upgradeable smart contract with all ERC20 metadata: { name }, { symbol },
-    *       { totalSupply }, { decimals }. Automatically who initialize the smart contract is the owner
-    *       of the smartcontract itself. { decimals } usually is set to 18
+    *       { totalSupply } in wei. Automatically who initialize the smart contract is the owner
+    *       of the smartcontract itself. securityDelayInBlocks default value is 5760 blocks.
     *
     * Requirements:
     *       - No requirements needed
@@ -66,10 +66,11 @@ contract ERC20_PDN is ERC20Upgradeable {
     *       - OwnerChangeEvent: the ownership change is created
     */
 
-    function initialize(string memory _name, string memory _symbol, uint _totalSupply, uint _decimals) initializer public {
+    function initialize(string memory _name, string memory _symbol, uint _totalSupply) initializer public {
         __ERC20_init(_name, _symbol);
-        _mint(msg.sender, _totalSupply * (uint(10) ** _decimals));   
+        _mint(msg.sender, _totalSupply);   
         owner = msg.sender;
+        securityDelayInBlocks = uint(5760);
         emit OwnerChangeEvent(address(0), msg.sender);
     }
 
