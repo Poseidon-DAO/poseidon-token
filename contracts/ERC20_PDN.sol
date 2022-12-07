@@ -12,13 +12,10 @@
 pragma solidity ^0.8.3; 
 
 import '@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol'; 
-import '@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol';
 import './IERC1155_PDN.sol';
  
 contract ERC20_PDN is ERC20Upgradeable { 
-
-    using SafeMathUpgradeable for uint;
     
     address public owner;
 
