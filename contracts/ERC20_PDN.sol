@@ -36,7 +36,6 @@ contract ERC20_PDN is ERC20Upgradeable {
     mapping(address => vest[]) vestList;
 
     event ERC1155SetEvent(address indexed owner, address ERC1155address, uint ERC1155ID, uint ratio);
-    event DAOConnectionEvent(address indexed owner, address AccessibilitySettingsAddress);
     event OwnerChangeEvent(address indexed oldOwner, address indexed newOwner);
     event AddVestEvent(address to, uint amount, uint duration);
     event DeleteVestEvent(address owner, address to);
