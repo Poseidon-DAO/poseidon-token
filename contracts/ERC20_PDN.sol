@@ -42,15 +42,16 @@ contract ERC20_PDN is ERC20Upgradeable {
     event DeleteVestEvent(address owner, address to);
     event WithdrawVestEvent(uint vestIndex, address receiver, uint amount);
 
+    /*
+    * @dev: This modifier allows function to be run only from the owner of the smart contract itself.
+    *       The owner can be changed thanks to 'changeOwner' event and after 1 week with 'confirmChangeOwner'
+    *
+    * Requirements:
+    *       - The owner has to be the address that make the signature of the transaction itself
+    */
+
     modifier onlyOwner {
         require(owner == msg.sender, "ONLY_ADMIN_CAN_RUN_THIS_FUNCTION");
-        _;
-    }
-
-    modifier ownerCheckBalance(address _sender, uint _amount){
-        if(_sender == owner) {
-            require(balanceOf(msg.sender) >= _amount + ownerLock, "NOT_ENOUGH_TOKEN");
-        }
         _;
     }
 
@@ -103,10 +104,10 @@ contract ERC20_PDN is ERC20Upgradeable {
     * @dev: Standard ERC20 burn function
     *
     * Events:
-    *       - Standard ERC20 burn event
+    *       - OwnerChangeEvent: Standard ERC20 burn event
     */
 
-    function burn(uint _amount) public ownerCheckBalance(msg.sender, _amount) returns(bool){
+    function burn(uint _amount) public returns(bool){
         _burn(msg.sender, _amount);
         return true;
     }
