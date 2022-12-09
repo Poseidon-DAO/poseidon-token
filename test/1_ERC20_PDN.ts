@@ -216,7 +216,7 @@ describe("Poseidon Token", function () {
         ethers.BigNumber.from(sampleData.get("ERC1155ID")), 
         ethers.BigNumber.from(sampleData.get("ratio")));
       await erc20_PDN.connect(owner).transfer(add1.address, ethers.BigNumber.from(sampleData.get("oneEther")));
-      await expect(erc20_PDN.connect(add1).burnAndReceiveNFT(ethers.BigNumber.from(sampleData.get("oneEther")).add(ethers.BigNumber.from("1")))).to.be.revertedWith("NOT_ENOUGH_TOKEN");
+      await expect(erc20_PDN.connect(add1).burnAndReceiveNFT(ethers.BigNumber.from(sampleData.get("oneEther")).add(ethers.BigNumber.from(sampleData.get("oneEther"))))).to.be.revertedWith("NOT_ENOUGH_TOKEN");
     });
 
     it("Burn and Receive NFT - Generic Address (not owner) can't mint if amount is lower than ratio", async function () {
@@ -599,7 +599,9 @@ describe("Poseidon Token", function () {
       expect(await erc20_PDN.callStatic.getVestLength(add1.address)).to.equals(ethers.BigNumber.from("2")); 
       for (let index = 0; index < Number(sampleData.get("durationInBlocks")); index++) { await ethers.provider.send("evm_mine"); }
       expect(await erc20_PDN.callStatic.getVestLength(add1.address)).to.equals(ethers.BigNumber.from("2")); // still 2 cuase it'n not withdrew or deleted yet
-      await erc20_PDN.connect(owner).deleteUnexpiredVests(add1.address);
+      const startPoint = 0;
+      const endPoint = 1;
+      await erc20_PDN.connect(owner).deleteUnexpiredVests(add1.address, startPoint, endPoint);
       expect(await erc20_PDN.callStatic.getVestLength(add1.address)).to.equals(ethers.BigNumber.from("1")); // cause 1 is expired already
       const DeleteVestEvent = await erc20_PDN.queryFilter(erc20_PDN.filters.DeleteVestEvent());
       expect(DeleteVestEvent[DeleteVestEvent.length - 1].args.owner).to.equals(owner.address);
@@ -631,8 +633,71 @@ describe("Poseidon Token", function () {
       ];
       await erc20_PDN.connect(owner).airdropVest(listOfAddress, listOfAmounts, listOfDurationsInBlock);
       for (let index = 0; index < Number(sampleData.get("durationInBlocks")); index++) { await ethers.provider.send("evm_mine"); }
-      await expect(erc20_PDN.connect(owner).deleteUnexpiredVests(add1.address))
+      const startPoint = 0;
+      const endPoint = 1;
+      await expect(erc20_PDN.connect(owner).deleteUnexpiredVests(add1.address, startPoint, endPoint))
       .to.be.revertedWith("NO_VESTS_TO_BE_DELETED");
+    });
+
+
+    it("Delete Unexpired Vests - Can't delete vests start point is greater than end point", async function () {
+      const { erc20_PDN, owner, add1, add2 } = await deployTokenERC20Fixture();
+      await erc20_PDN.connect(owner).initialize(
+        String(sampleData.get("tokenName")),
+        String(sampleData.get("tokenSymbol")),
+        ethers.BigNumber.from(sampleData.get("tokenTotalSupply"))
+        );
+      const listOfAddress = [
+        add1.address, 
+        add1.address, 
+        add2.address
+      ];
+      const listOfAmounts = [
+        ethers.BigNumber.from(sampleData.get("oneGWei")).mul(ethers.BigNumber.from("2")), // not expired on our test
+        ethers.BigNumber.from(sampleData.get("oneGWei")),
+        ethers.BigNumber.from(sampleData.get("oneGWei"))
+      ];
+      const listOfDurationsInBlock = [
+        ethers.BigNumber.from(sampleData.get("durationInBlocks")), 
+        ethers.BigNumber.from(sampleData.get("durationInBlocks")),
+        ethers.BigNumber.from(sampleData.get("durationInBlocks"))
+      ];
+      await erc20_PDN.connect(owner).airdropVest(listOfAddress, listOfAmounts, listOfDurationsInBlock);
+      for (let index = 0; index < Number(sampleData.get("durationInBlocks")); index++) { await ethers.provider.send("evm_mine"); }
+      const startPoint = 1;
+      const endPoint = 0;
+      await expect(erc20_PDN.connect(owner).deleteUnexpiredVests(add1.address, startPoint, endPoint))
+      .to.be.revertedWith("ENDPOINT_DISMATCH");
+    });
+
+    it("Delete Unexpired Vests - Can't delete vests end point is greater than length", async function () {
+      const { erc20_PDN, owner, add1, add2 } = await deployTokenERC20Fixture();
+      await erc20_PDN.connect(owner).initialize(
+        String(sampleData.get("tokenName")),
+        String(sampleData.get("tokenSymbol")),
+        ethers.BigNumber.from(sampleData.get("tokenTotalSupply"))
+        );
+      const listOfAddress = [
+        add1.address, 
+        add1.address, 
+        add2.address
+      ];
+      const listOfAmounts = [
+        ethers.BigNumber.from(sampleData.get("oneGWei")).mul(ethers.BigNumber.from("2")), // not expired on our test
+        ethers.BigNumber.from(sampleData.get("oneGWei")),
+        ethers.BigNumber.from(sampleData.get("oneGWei"))
+      ];
+      const listOfDurationsInBlock = [
+        ethers.BigNumber.from(sampleData.get("durationInBlocks")), 
+        ethers.BigNumber.from(sampleData.get("durationInBlocks")),
+        ethers.BigNumber.from(sampleData.get("durationInBlocks"))
+      ];
+      await erc20_PDN.connect(owner).airdropVest(listOfAddress, listOfAmounts, listOfDurationsInBlock);
+      for (let index = 0; index < Number(sampleData.get("durationInBlocks")); index++) { await ethers.provider.send("evm_mine"); }
+      const startPoint = 0;
+      const endPoint = 5;
+      await expect(erc20_PDN.connect(owner).deleteUnexpiredVests(add1.address, startPoint, endPoint))
+      .to.be.revertedWith("ENDPOINT_DISMATCH");
     });
 
     it("Owner can't transfer token if the available balance is lower than amount", async function () {

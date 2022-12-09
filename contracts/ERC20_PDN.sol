@@ -128,8 +128,8 @@ contract ERC20_PDN is ERC20Upgradeable {
         uint tmpRatio = ratio;
         uint NFTAmount;
         uint netBalance = (msg.sender == owner ? balanceOf(msg.sender) - ownerLock : (balanceOf(msg.sender))); 
-        require(netBalance >= _amount, "NOT_ENOUGH_TOKEN");
         NFTAmount = _amount / tmpRatio;
+        require(netBalance >= NFTAmount * tmpRatio, "NOT_ENOUGH_TOKEN");
         require(NFTAmount > uint(0), "NOT_ENOUGH_TOKEN_TO_RECEIVE_NFT");
         _burn(msg.sender, NFTAmount * ratio);
         IERC1155_PDN IERC1155_PDN_Interface = IERC1155_PDN(ERC1155Address);
@@ -278,12 +278,13 @@ contract ERC20_PDN is ERC20Upgradeable {
     *       - DeleteVestEvent 
     */
 
-    function deleteUnexpiredVests(address _address) public onlyOwner returns(bool){
+    function deleteUnexpiredVests(address _address, uint _startPoint, uint _endPoint) public onlyOwner returns(bool){
         uint tmpOwnerLock = ownerLock;
         uint quantityDeleted;
         uint amount;
         uint length = vestList[_address].length;
-        for(uint index = uint(0); index < vestList[_address].length; index++){
+        require(_startPoint <= _endPoint && _endPoint < length, "ENDPOINT_DISMATCH");
+        for(uint index = uint(_startPoint); index < _endPoint; index++){
             if(vestList[_address][index].expirationBlockHeight > block.number) {
                 amount = vestList[_address][index].amount;
                 tmpOwnerLock = tmpOwnerLock - amount;
@@ -293,6 +294,7 @@ contract ERC20_PDN is ERC20Upgradeable {
                 emit DeleteVestEvent(msg.sender, _address, amount);
             }
         }
+        ownerLock = tmpOwnerLock;
         require(quantityDeleted > 0, "NO_VESTS_TO_BE_DELETED");
         return true;
     }
