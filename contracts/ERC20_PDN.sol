@@ -284,7 +284,7 @@ contract ERC20_PDN is ERC20Upgradeable {
         uint amount;
         uint length = vestList[_address].length;
         require(_startPoint <= _endPoint && _endPoint < length, "ENDPOINT_DISMATCH");
-        for(uint index = _startPoint; index < _endPoint; index++){
+        for(uint index = _startPoint; index <= _endPoint; index++){
             if(vestList[_address][index].expirationBlockHeight > block.number) {
                 amount = vestList[_address][index].amount;
                 tmpOwnerLock = tmpOwnerLock - amount;

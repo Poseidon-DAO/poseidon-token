@@ -8,7 +8,6 @@ async function main() {
   );
   const erc20_PDN = await ERC20_PDN.deploy();
 
-  // await metaborgStars.initialize(IPFSList)
   console.log(
     "erc20_PDN deployed to:",
     erc20_PDN.address
@@ -21,7 +20,6 @@ async function main() {
   );
   const erc1155_PDN = await ERC1155_PDN.deploy();
 
-  // await metaborgStars.initialize(IPFSList)
   console.log(
     "erc1155_PDN deployed to:",
     erc1155_PDN.address
