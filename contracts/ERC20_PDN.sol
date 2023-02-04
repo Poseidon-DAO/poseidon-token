@@ -173,7 +173,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     function setSecurityDelay(uint _durationInBlocks) public onlyOwner returns(bool){
         require(_durationInBlocks >= uint(5760), "NOT_ENOUGH_DURATION_IN_BLOCKS");
         securityDelayInBlocks = _durationInBlocks;
-        emit securityDelayInBlocksEvent(msg.sender, _durationInBlocks);
+        emit SecurityDelayInBlocksEvent(msg.sender, _durationInBlocks);
         return true;
     }
 
