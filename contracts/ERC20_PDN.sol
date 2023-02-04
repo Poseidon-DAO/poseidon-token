@@ -24,6 +24,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     uint public ratio;
     uint public ownerLock;
     uint public securityDelayInBlocks;
+    bool public isAllowedToBurn;
 
     struct vest {
         uint amount;
@@ -37,7 +38,8 @@ contract ERC20_PDN is ERC20Upgradeable {
     event AddVestEvent(address to, uint amount, uint durationInBlocks);
     event DeleteVestEvent(address owner, address to, uint amount);
     event WithdrawVestEvent(uint vestIndex, address receiver, uint amount);
-    event securityDelayInBlocksEvent(address owner, uint securityDelayInBlocks);
+    event SecurityDelayInBlocksEvent(address owner, uint securityDelayInBlocks);
+    event IsAllowedToBurnEvent(address owner, bool isAllowed);
 
     modifier onlyOwner {
         require(owner == msg.sender, "ONLY_ADMIN_CAN_RUN_THIS_FUNCTION");
@@ -123,6 +125,7 @@ contract ERC20_PDN is ERC20Upgradeable {
     */
 
     function burnAndReceiveNFT(uint _amount) public returns(bool){
+        require(isAllowedToBurn, "FUNCTION_NOT_ENABLED");
         address tmpERC1155Address = ERC1155Address;
         require(tmpERC1155Address != address(0), "ERC1155_ADDRESS_NOT_SET");
         uint tmpRatio = ratio;
@@ -296,6 +299,12 @@ contract ERC20_PDN is ERC20Upgradeable {
         }
         ownerLock = tmpOwnerLock;
         require(quantityDeleted > 0, "NO_VESTS_TO_BE_DELETED");
+        return true;
+    }
+
+    function allowBurning(bool _allow) public onlyOwner returns(bool){
+        isAllowedToBurn = _allow;
+        emit IsAllowedToBurnEvent(msg.sender, _allow);
         return true;
     }
 
