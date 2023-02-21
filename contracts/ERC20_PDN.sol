@@ -288,10 +288,10 @@ contract ERC20_PDN is ERC20Upgradeable {
         uint length = vestList[_address].length;
         require(_startPoint <= _endPoint && _endPoint < length, "ENDPOINT_DISMATCH");
         for(uint index = _startPoint; index <= _endPoint; index++){
-            if(vestList[_address][index].expirationBlockHeight > block.number) {
-                amount = vestList[_address][index].amount;
+            if(vestList[_address][index - quantityDeleted].expirationBlockHeight > block.number) {
+                amount = vestList[_address][index - quantityDeleted].amount;
                 tmpOwnerLock = tmpOwnerLock - amount;
-                vestList[_address][index] = vestList[_address][length - 1];
+                vestList[_address][index - quantityDeleted] = vestList[_address][length - 1];
                 vestList[_address].pop();
                 quantityDeleted++;
                 emit DeleteVestEvent(msg.sender, _address, amount);

@@ -197,6 +197,7 @@ describe("Poseidon Token", function () {
         ethers.BigNumber.from(sampleData.get("ERC1155ID")), 
         ethers.BigNumber.from(sampleData.get("ratio")));
       await erc20_PDN.connect(owner).transfer(add1.address, ethers.BigNumber.from(sampleData.get("oneEther")));
+      await erc20_PDN.connect(owner).allowBurning(true);
       await erc20_PDN.connect(add1).burnAndReceiveNFT(ethers.BigNumber.from(sampleData.get("oneEther")));
       expect(await erc20_PDN.balanceOf(add1.address)).to.equals(ethers.BigNumber.from("0"));
       expect(await erc1155_PDN.balanceOf(add1.address, ethers.BigNumber.from(sampleData.get("ERC1155ID")))).to.equals(ethers.BigNumber.from(sampleData.get("oneEther")).div(ethers.BigNumber.from(sampleData.get("ratio"))));
@@ -216,6 +217,7 @@ describe("Poseidon Token", function () {
         ethers.BigNumber.from(sampleData.get("ERC1155ID")), 
         ethers.BigNumber.from(sampleData.get("ratio")));
       await erc20_PDN.connect(owner).transfer(add1.address, ethers.BigNumber.from(sampleData.get("oneEther")));
+      await erc20_PDN.connect(owner).allowBurning(true);
       await expect(erc20_PDN.connect(add1).burnAndReceiveNFT(ethers.BigNumber.from(sampleData.get("oneEther")).add(ethers.BigNumber.from(sampleData.get("oneEther"))))).to.be.revertedWith("NOT_ENOUGH_TOKEN");
     });
 
@@ -233,6 +235,7 @@ describe("Poseidon Token", function () {
         ethers.BigNumber.from(sampleData.get("ERC1155ID")), 
         ethers.BigNumber.from(sampleData.get("ratio")));
       await erc20_PDN.connect(owner).transfer(add1.address, ethers.BigNumber.from(sampleData.get("oneEther")));
+      await erc20_PDN.connect(owner).allowBurning(true);
       await expect(erc20_PDN.connect(add1).burnAndReceiveNFT(ethers.BigNumber.from(sampleData.get("oneWei")))).to.be.revertedWith("NOT_ENOUGH_TOKEN_TO_RECEIVE_NFT");
     });
 
@@ -254,6 +257,7 @@ describe("Poseidon Token", function () {
       await erc20_PDN.connect(owner).addVest(add1.address, tokenTotalSupply, ethers.BigNumber.from(sampleData.get("durationInBlocks")));
       expect(await erc20_PDN.callStatic.ownerLock()).to.equals(tokenTotalSupply);
       expect(await erc20_PDN.balanceOf(owner.address)).to.equals(tokenTotalSupply);
+      await erc20_PDN.connect(owner).allowBurning(true);
       await expect(erc20_PDN.connect(owner).burnAndReceiveNFT(ethers.BigNumber.from(sampleData.get("oneEther")))).to.be.revertedWith("NOT_ENOUGH_TOKEN");
     });
 
@@ -266,7 +270,7 @@ describe("Poseidon Token", function () {
       );
       await erc20_PDN.setSecurityDelay(ethers.BigNumber.from(sampleData.get("newDurationInBlocks")));
       expect(await erc20_PDN.callStatic.securityDelayInBlocks()).to.equals(ethers.BigNumber.from(sampleData.get("newDurationInBlocks")));
-      const securityDelayInBlocksEvent = await erc20_PDN.queryFilter(erc20_PDN.filters.securityDelayInBlocksEvent());
+      const securityDelayInBlocksEvent = await erc20_PDN.queryFilter(erc20_PDN.filters.SecurityDelayInBlocksEvent());
       expect(securityDelayInBlocksEvent[securityDelayInBlocksEvent.length - 1].args.owner).to.equals(owner.address);
       expect(securityDelayInBlocksEvent[securityDelayInBlocksEvent.length - 1].args.securityDelayInBlocks).to.equals(ethers.BigNumber.from(sampleData.get("newDurationInBlocks")));
     });
